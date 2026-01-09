@@ -2,31 +2,42 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Web Builder Pro v1.9.2 - AI Magic Edition</title>
+    <title>Web Builder Pro v1.9.3 - AI Final</title>
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <script src="https://unpkg.com/grapesjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #3ecf8e; --ai-color: #8e44ad; --bg: #121212; }
+        :root { --primary: #3ecf8e; --ai: #a29bfe; --bg: #121212; }
         body, html { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: #fff; overflow: hidden; }
+        
+        /* Proteção */
         #lock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        
+        /* Layout */
         .editor-row { display: flex; height: 100vh; width: 100%; }
-        #gjs { flex-grow: 1; }
-        .panel__right { width: 320px; background: #252525; border-left: 1px solid #333; display: flex; flex-direction: column; color: white; }
-        .action-buttons { padding: 15px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #333; }
-        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 10px; }
-        .btn-pub { background: var(--primary); color: #000; }
-        .tabs { display: flex; background: #1a1a1a; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 10px; border-bottom: 2px solid transparent; font-weight: bold; }
+        #gjs { flex-grow: 1; border: none; }
+        
+        /* Sidebar Profissional */
+        .panel__right { width: 320px; background: #1e1e1e; border-left: 1px solid #333; display: flex; flex-direction: column; color: #ccc; }
+        .action-buttons { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-bottom: 1px solid #333; }
+        .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; text-transform: uppercase; transition: 0.3s; }
+        .btn-pub { background: var(--primary); color: #000; grid-column: span 2; }
+        .btn-save { background: #333; color: white; }
+        
+        .tabs { display: flex; background: #151515; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 10px; font-weight: bold; border-bottom: 2px solid transparent; }
         .tab.active { border-bottom: 2px solid var(--primary); color: var(--primary); }
-        .tab-ai { color: #a29bfe; }
-        .tab-ai.active { border-bottom-color: var(--ai-color); color: var(--ai-color); }
-        #blocks, #traits, #ai-panel { flex: 1; overflow-y: auto; padding: 15px; background: #1a1a1a; }
+        .tab-ai.active { border-bottom-color: var(--ai); color: var(--ai); }
+        
+        #blocks, #traits, #ai-panel { flex: 1; overflow-y: auto; padding: 15px; }
         .hidden { display: none; }
-        #ai-prompt { width: 100%; height: 120px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 5px; padding: 10px; box-sizing: border-box; resize: none; margin-bottom: 10px; font-family: inherit; }
-        .btn-ai { background: var(--ai-color); color: white; width: 100%; margin-bottom: 10px; }
-        #ai-status { font-size: 11px; color: #a29bfe; text-align: center; margin-bottom: 10px; display: none; }
-        .ai-instruction { font-size: 11px; color: #888; margin-bottom: 10px; line-height: 1.4; }
+        
+        /* Estilo IA */
+        #ai-prompt { width: 100%; height: 100px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 6px; padding: 10px; box-sizing: border-box; resize: none; margin-bottom: 10px; outline: none; }
+        .btn-ai { background: var(--ai); color: #000; width: 100%; }
+        #ai-status { font-size: 11px; color: var(--ai); margin-top: 10px; text-align: center; font-style: italic; }
+        
+        .gjs-block { background: #2d2d2d !important; color: #fff !important; border: 1px solid #444 !important; padding: 15px !important; }
         .gjs-cv-canvas { width: calc(100% - 320px) !important; }
     </style>
 </head>
@@ -34,37 +45,40 @@
 
     <div id="app-container">
         <div id="lock-screen" style="display:none;">
-            <h3 style="color: var(--primary)">BUILDER AI MAGIC</h3>
-            <input type="password" id="pass-input" placeholder="Sua senha" style="padding:12px; border-radius:5px; text-align:center;" onkeydown="checkPass(event)">
+            <h2 style="color: var(--primary)">DASHBOARD v1.9.3</h2>
+            <input type="password" id="pass-input" placeholder="Sua senha" style="padding:12px; border-radius:6px; text-align:center; border:none; outline:none;" onkeydown="checkPass(event)">
         </div>
 
         <div class="editor-row">
             <div id="gjs" style="display:none;"></div>
+            
             <div id="sidebar" class="panel__right" style="display:none;">
                 <div class="action-buttons">
-                    <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR PÁGINA</button>
-                    <button class="btn" style="background:#444; color:white;" onclick="saveToSupabase()">💾 SALVAR NUVEM</button>
+                    <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR NA WEB</button>
+                    <button class="btn btn-save" onclick="saveToSupabase()">SALVAR</button>
+                    <button class="btn btn-save" onclick="loadFromSupabase()">ABRIR</button>
                 </div>
+                
                 <div class="tabs">
-                    <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">BLOCOS</div>
-                    <div class="tab" id="tab-traits" onclick="switchTab('traits')">CONFIGS</div>
+                    <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">ELEMENTOS</div>
+                    <div class="tab" id="tab-traits" onclick="switchTab('traits')">AJUSTES</div>
                     <div class="tab tab-ai" id="tab-ai" onclick="switchTab('ai')">IA MAGIC</div>
                 </div>
+
                 <div id="blocks"></div>
                 <div id="traits" class="hidden"><div id="traits-container"></div></div>
+                
                 <div id="ai-panel" class="hidden">
-                    <h4 style="margin: 0 0 5px 0; color: #a29bfe;">IA Geradora de Seções</h4>
-                    <p class="ai-instruction">Descreva a seção (ex: "Depoimentos com 3 colunas").</p>
-                    <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de preços..."></textarea>
-                    <button class="btn btn-ai" onclick="generateAIBlock()">✨ GERAR SEÇÃO COMPLETA</button>
-                    <div id="ai-status">Processando design...</div>
+                    <h4 style="margin:0 0 10px 0;">O que você quer criar?</h4>
+                    <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de captura com título, input de e-mail e botão chamativo..."></textarea>
+                    <button class="btn btn-ai" onclick="generateAIBlock()">✨ GERAR COM IA</button>
+                    <div id="ai-status"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÕES
         const MINHA_SENHA = "Ph17112017"; 
         const GEMINI_API_KEY = "AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w"; 
         const SUPABASE_URL = 'https://jlegilyjmombwaixbdml.supabase.co'; 
@@ -80,7 +94,6 @@
                 if (data) {
                     document.body.innerHTML = data.html + `<style>${data.css}</style>`;
                     document.querySelectorAll('script').forEach(s => { const n = document.createElement('script'); n.text = s.text; document.body.appendChild(n); });
-                    document.body.style.overflow = 'auto';
                 }
             } else { document.getElementById('lock-screen').style.display = 'flex'; }
         };
@@ -99,20 +112,32 @@
             const prompt = document.getElementById('ai-prompt').value;
             const status = document.getElementById('ai-status');
             if (!prompt) return;
-            status.style.display = "block";
-            status.innerText = "IA desenhando...";
+            
+            status.innerText = "IA está processando seu design...";
+            
             try {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "Retorne APENAS o código HTML puro com CSS inline. Sem explicações. Pedido: " + prompt }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Gere o código HTML puro com CSS inline para: " + prompt + ". Retorne apenas o código, sem explicações." }] }] })
                 });
-                const d = await resp.json();
-                let html = d.candidates[0].content.parts[0].text.replace(/```html/g, "").replace(/```/g, "").trim();
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    status.innerText = "Erro na API: " + data.error.message;
+                    return;
+                }
+
+                let html = data.candidates[0].content.parts[0].text;
+                html = html.replace(/```html/g, "").replace(/```/g, "").trim();
+                
                 editor.addComponents(html);
-                status.innerText = "Pronto!";
-                setTimeout(() => status.style.display="none", 2000);
-            } catch (e) { status.innerText = "Erro na API."; }
+                status.innerText = "Seção adicionada com sucesso!";
+            } catch (e) {
+                status.innerText = "Erro de conexão. Verifique sua chave Gemini.";
+                console.error(e);
+            }
         }
 
         function initEditor() {
@@ -120,9 +145,9 @@
                 container: '#gjs', height: '100vh', width: 'auto', storageManager: false,
                 traitManager: { appendTo: '#traits-container' },
                 blockManager: { appendTo: '#blocks', blocks: [
-                    { id: 'sec', label: 'Seção', content: '<section style="padding:50px;">Nova Seção</section>' },
-                    { id: 'txt', label: 'Texto', content: '<div>Texto</div>' },
-                    { id: 'btn', label: 'Botão', content: '<div style="text-align:center;padding:10px;"><button style="padding:10px 20px; background:#3ecf8e; color:black; border-radius:5px; border:none; font-weight:bold;">Botão</button></div>' }
+                    { id: 'b1', label: '<b>Seção Vazia</b>', content: '<section style="padding:50px; text-align:center;">Nova Seção</section>', category: 'Básicos' },
+                    { id: 'b2', label: '<b>Título</b>', content: '<h1 style="padding:10px;">Título Principal</h1>', category: 'Básicos' },
+                    { id: 'b3', label: '<b>Botão Pro</b>', content: '<div style="padding:20px; text-align:center;"><button style="background:var(--primary); padding:15px 30px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">CLIQUE AQUI</button></div>', category: 'Marketing' }
                 ]}
             });
             editor.on('component:selected', () => switchTab('traits'));
@@ -138,8 +163,14 @@
             const name = prompt("Nome da URL:");
             if (name) {
                 await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
-                alert("No ar! " + window.location.href.split('?')[0] + "?p=" + name);
+                const url = window.location.origin + window.location.pathname + "?p=" + name;
+                prompt("Página no Ar! Copie o link:", url);
             }
+        }
+
+        async function loadFromSupabase() {
+            const { data } = await _supabase.from('pages').select('*').order('id', { ascending: false }).limit(1);
+            if (data[0]) { editor.setComponents(data[0].html); editor.setStyle(data[0].css); }
         }
     </script>
 </body>
