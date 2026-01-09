@@ -2,57 +2,68 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Builder Pro v2.5 - Edição Infoprodutor</title>
+    <title>Builder Pro v2.6 - Launch Edition</title>
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/grapesjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #3ecf8e; --ai: #a29bfe; --bg: #121212; }
-        body, html { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: #1a1a1a; color: white; overflow: hidden; }
-        #lock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #lock-screen input { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #2d2d2d; color: white; width: 280px; text-align: center; font-size: 18px; outline: none; }
+        body, html { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: #fff; overflow: hidden; }
+        
+        /* Proteção Condicional */
+        #lock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #lock-screen input { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #2d2d2d; color: white; width: 280px; text-align: center; }
+
+        /* Interface */
         #main-editor { display: none; width: 100%; height: 100vh; flex-direction: row; }
-        #gjs { flex-grow: 1; background: #f8f9fa; }
-        .sidebar { width: 320px; background: #252525; border-left: 1px solid #333; display: flex; flex-direction: column; }
+        #gjs { flex-grow: 1; }
+        .sidebar { width: 320px; background: #252525; border-left: 1px solid #333; display: flex; flex-direction: column; color: #ccc; }
+        
         .action-buttons { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; border-bottom: 1px solid #333; }
         .btn { padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; text-transform: uppercase; }
         .btn-pub { background: var(--primary); color: #000; grid-column: span 2; }
         .btn-save { background: #444; color: white; }
+        
         .tabs { display: flex; background: #151515; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 10px; border-bottom: 2px solid transparent; font-weight: bold; }
         .tab.active { border-bottom: 2px solid var(--primary); color: var(--primary); }
-        #blocks, #traits, #ai-panel { flex: 1; overflow-y: auto; padding: 10px; background: #1a1a1a; }
+        
+        #blocks, #traits, #ai-panel { flex: 1; overflow-y: auto; padding: 15px; background: #1a1a1a; }
         .hidden { display: none; }
-        .gjs-block { width: 100% !important; min-height: auto !important; padding: 15px !important; margin: 5px 0 !important; background: #2d2d2d !important; color: white !important; border: 1px solid #444 !important; }
-        #ai-prompt { width: 100%; height: 80px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 6px; padding: 8px; resize: none; }
+        
+        /* Melhoria nos Blocos */
+        .gjs-block { width: 100% !important; background: #2d2d2d !important; color: #fff !important; border: 1px solid #444 !important; padding: 15px !important; margin-bottom: 5px !important; }
+        #ai-prompt { width: 100%; height: 80px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 6px; padding: 10px; }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <h2 style="color: var(--primary); margin-bottom: 20px;">BUILDER PRO v2.5</h2>
-        <input type="password" id="pass-input" placeholder="Senha de Acesso" onkeydown="checkPass(event)">
+        <h2 style="color: var(--primary)">DASHBOARD ADMIN</h2>
+        <input type="password" id="pass-input" placeholder="Sua senha" onkeydown="checkPass(event)">
     </div>
 
     <div id="main-editor">
         <div id="gjs"></div>
         <div class="sidebar">
             <div class="action-buttons">
-                <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR PÁGINA</button>
+                <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR PÁGINA AGORA</button>
                 <button class="btn btn-save" onclick="saveToSupabase()">SALVAR</button>
                 <button class="btn btn-save" onclick="loadFromSupabase()">ABRIR</button>
             </div>
             <div class="tabs">
-                <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">COMPONENTES</div>
+                <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">BLOCOS</div>
                 <div class="tab" id="tab-traits" onclick="switchTab('traits')">ESTILOS</div>
-                <div class="tab" id="tab-ai" onclick="switchTab('ai')">IA MAGIC</div>
+                <div class="tab" id="tab-ai" onclick="switchTab('ai')">CLONAGEM & IA</div>
             </div>
             <div id="blocks"></div>
             <div id="traits" class="hidden"><div id="traits-container"></div></div>
             <div id="ai-panel" class="hidden">
-                <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de bônus com 4 cards cinzas..."></textarea>
-                <button class="btn" style="background:var(--ai); color:#000; width:100%; margin-top:10px;" onclick="generateAIBlock()">✨ GERAR COM IA</button>
+                <button class="btn" style="background:#e67e22; color:white; width:100%; margin-bottom:15px;" onclick="clonePage()">📑 CLONAR VIA HTML</button>
+                <hr style="border:0; border-top:1px solid #333; margin-bottom:15px;">
+                <textarea id="ai-prompt" placeholder="Descreva uma seção..."></textarea>
+                <button class="btn" style="background:var(--ai); color:black; width:100%; margin-top:10px;" onclick="generateAIBlock()">✨ GERAR COM IA</button>
                 <div id="ai-status" style="font-size:11px; margin-top:10px; text-align:center;"></div>
             </div>
         </div>
@@ -65,6 +76,23 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsZWdpbHlqbW9tYndhaXhiZG1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NjI5MzYsImV4cCI6MjA4MzUzODkzNn0.8Bivhr8C1kkEAkh1szvDy5Z7HesSUQKwYsFXDeoVV18';
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageName = urlParams.get('p');
+
+            if (pageName) {
+                // MODO PÚBLICO: Carrega direto sem pedir senha
+                const { data } = await _supabase.from('pages').select('html, css').eq('name', pageName).single();
+                if (data) {
+                    document.body.innerHTML = data.html + `<style>${data.css}</style>`;
+                    document.body.style.overflow = 'auto';
+                }
+            } else {
+                // MODO EDITOR: Pede senha
+                document.getElementById('lock-screen').style.display = 'flex';
+            }
+        };
 
         function checkPass(e) {
             if (e.key === "Enter" && document.getElementById('pass-input').value === MINHA_SENHA) {
@@ -87,50 +115,58 @@
                 container: '#gjs', height: '100vh', width: 'auto', storageManager: false,
                 traitManager: { appendTo: '#traits-container' },
                 blockManager: { appendTo: '#blocks', blocks: [
-                    { id: 'hero', label: '<i class="fa fa-star"></i><br>Hero Top', category: 'Vendas', content: '<section style="padding: 80px 20px; text-align: center; background: #000; color: #fff;"><h1>Sua Headline de Impacto Aqui</h1><p>Subheadline persuasiva para seu produto de leilão.</p></section>' },
-                    { id: 'wpp', label: '<i class="fab fa-whatsapp"></i><br>Botão WhatsApp', category: 'Vendas', content: '<div style="text-align:center; padding:20px;"><a href="https://wa.me/SEUNUMERO" style="background:#25d366; color:#fff; padding:15px 30px; border-radius:50px; text-decoration:none; font-weight:bold; font-size:18px; display:inline-block;"><i class="fab fa-whatsapp"></i> FALAR NO WHATSAPP</a></div>' },
-                    { id: 'timer', label: '<i class="fa fa-clock"></i><br>Cronômetro', category: 'Vendas', content: '<div style="background:#111; color:#fff; padding:20px; text-align:center; border:2px solid #e74c3c;"><p style="margin-bottom:10px; font-weight:bold;">A OFERTA TERMINA EM:</p><div style="font-size:30px; font-weight:bold; letter-spacing:2px;">00:14:59</div></div>' },
-                    { id: 'video', label: '<i class="fa fa-play-circle"></i><br>Vídeo VSL', category: 'Vendas', content: '<div style="max-width:800px; margin:20px auto; background:#000; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; border: 1px solid #333;">VÍDEO DE VENDAS (YouTube/Vimeo)</div>' }
+                    { id: 'wpp', label: '<i class="fab fa-whatsapp"></i><br>WhatsApp', content: '<div style="text-align:center; padding:20px;"><a href="https://wa.me/55..." style="background:#25d366; color:#fff; padding:15px 30px; border-radius:50px; text-decoration:none; font-weight:bold; display:inline-block;">FALAR NO WHATSAPP</a></div>' },
+                    { id: 'timer', label: '<i class="fa fa-clock"></i><br>Cronômetro', content: '<div style="background:#000; color:#e74c3c; padding:20px; text-align:center; font-size:30px; font-weight:bold; border:2px solid #e74c3c;">00:14:59</div>' }
                 ]}
             });
             editor.on('component:selected', () => switchTab('traits'));
+        }
+
+        function clonePage() {
+            const html = prompt("Cole o código HTML da página que deseja clonar:");
+            if (html) {
+                editor.setComponents(html);
+                alert("Clonagem concluída! Ajuste os textos e imagens agora.");
+            }
+        }
+
+        async function publishPage() {
+            const name = prompt("Defina o link da página (ex: oferta-leilao):");
+            if (name) {
+                await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
+                const url = window.location.origin + window.location.pathname + "?p=" + name;
+                alert("SUCESSO! Sua página está no ar e pública em:\n\n" + url);
+                window.open(url, '_blank');
+            }
+        }
+
+        async function saveToSupabase() {
+            const name = prompt("Nome do projeto:");
+            if (name) await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
+            alert("Salvo!");
+        }
+
+        async function loadFromSupabase() {
+            const { data } = await _supabase.from('pages').select('*').order('id', { ascending: false }).limit(1);
+            if (data && data[0]) { editor.setComponents(data[0].html); editor.setStyle(data[0].css); }
         }
 
         async function generateAIBlock() {
             const prompt = document.getElementById('ai-prompt').value;
             const status = document.getElementById('ai-status');
             if (!prompt) return;
-            status.innerText = "Processando IA...";
+            status.innerText = "IA processando...";
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "Gere apenas o HTML com CSS inline para: " + prompt }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Gere HTML com CSS inline para: " + prompt }] }] })
                 });
                 const data = await response.json();
                 let html = data.candidates[0].content.parts[0].text.replace(/```html/g, "").replace(/```/g, "").trim();
                 editor.addComponents(html);
-                status.innerText = "✅ Adicionado!";
+                status.innerText = "✅ Pronto!";
             } catch (e) { status.innerText = "Erro na IA."; }
-        }
-
-        async function saveToSupabase() {
-            const name = prompt("Nome Interno:");
-            if (name) await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
-            alert("Salvo!");
-        }
-
-        async function publishPage() {
-            const name = prompt("Nome da URL:");
-            if (name) {
-                await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
-                alert("Link: " + window.location.origin + window.location.pathname + "?p=" + name);
-            }
-        }
-
-        async function loadFromSupabase() {
-            const { data } = await _supabase.from('pages').select('*').order('id', { ascending: false }).limit(1);
-            if (data[0]) { editor.setComponents(data[0].html); editor.setStyle(data[0].css); }
         }
     </script>
 </body>
