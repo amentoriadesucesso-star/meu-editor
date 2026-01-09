@@ -2,47 +2,38 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Builder AI Pro v2.2</title>
+    <title>Builder AI Magic v2.3 - Final Version</title>
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <script src="https://unpkg.com/grapesjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #3ecf8e; --ai: #a29bfe; --bg: #121212; }
         body, html { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: #1a1a1a; color: white; overflow: hidden; }
-        
-        /* Proteção Inicial */
         #lock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #lock-screen input { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #2d2d2d; color: white; width: 280px; text-align: center; font-size: 18px; outline: none; }
-
-        /* Interface do Editor */
         #main-editor { display: none; width: 100%; height: 100vh; flex-direction: row; }
         #gjs { flex-grow: 1; background: #fff; }
-        
         .sidebar { width: 320px; background: #252525; border-left: 1px solid #333; display: flex; flex-direction: column; }
         .action-buttons { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-bottom: 1px solid #333; }
         .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; text-transform: uppercase; }
         .btn-pub { background: var(--primary); color: #000; grid-column: span 2; }
         .btn-save { background: #444; color: white; }
-        
+        .btn-clear { background: #e74c3c; color: white; grid-column: span 2; margin-top: 5px; }
         .tabs { display: flex; background: #151515; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 10px; border-bottom: 2px solid transparent; }
         .tab.active { border-bottom: 2px solid var(--primary); color: var(--primary); }
-        
         #blocks, #traits, #ai-panel { flex: 1; overflow-y: auto; padding: 15px; background: #1a1a1a; }
         .hidden { display: none; }
-
-        /* Painel da IA */
-        #ai-prompt { width: 100%; height: 100px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 6px; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; }
+        #ai-prompt { width: 100%; height: 100px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 6px; padding: 10px; box-sizing: border-box; resize: none; }
         .btn-ai { background: var(--ai); color: #000; width: 100%; margin-top: 10px; }
-        #ai-status { font-size: 11px; color: var(--ai); margin-top: 10px; text-align: center; line-height: 1.4; word-break: break-word; }
-        
+        #ai-status { font-size: 11px; color: var(--ai); margin-top: 10px; text-align: center; line-height: 1.4; }
         .gjs-cv-canvas { width: calc(100% - 320px) !important; }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <h2 style="color: var(--primary); margin-bottom: 20px;">BUILDER AI MAGIC v2.2</h2>
+        <h2 style="color: var(--primary); margin-bottom: 20px;">BUILDER AI MAGIC v2.3</h2>
         <input type="password" id="pass-input" placeholder="Digite sua senha" onkeydown="checkPass(event)">
     </div>
 
@@ -53,6 +44,7 @@
                 <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR</button>
                 <button class="btn btn-save" onclick="saveToSupabase()">SALVAR</button>
                 <button class="btn btn-save" onclick="loadFromSupabase()">ABRIR</button>
+                <button class="btn btn-clear" onclick="clearEditor()">🧹 LIMPAR EDITOR</button>
             </div>
             <div class="tabs">
                 <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">BLOCOS</div>
@@ -62,7 +54,7 @@
             <div id="blocks"></div>
             <div id="traits" class="hidden"><div id="traits-container"></div></div>
             <div id="ai-panel" class="hidden">
-                <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de preços com 3 planos, estilo moderno e botões arredondados..."></textarea>
+                <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de depoimentos moderna..."></textarea>
                 <button class="btn btn-ai" onclick="generateAIBlock()">✨ GERAR COM IA</button>
                 <div id="ai-status"></div>
             </div>
@@ -70,7 +62,6 @@
     </div>
 
     <script>
-        // CONFIGURAÇÕES
         const MINHA_SENHA = "Ph17112017"; 
         const GEMINI_API_KEY = "AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w"; 
         const SUPABASE_URL = 'https://jlegilyjmombwaixbdml.supabase.co'; 
@@ -94,24 +85,32 @@
             });
         }
 
+        async function callGemini(modelName, promptText) {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: "Gere apenas o código HTML com estilos CSS inline para: " + promptText + ". Sem markdown, sem explicações." }] }]
+                })
+            });
+            return response;
+        }
+
         async function generateAIBlock() {
             const prompt = document.getElementById('ai-prompt').value;
             const status = document.getElementById('ai-status');
             if (!prompt) return;
-            
-            status.innerText = "IA Gerando Código... Aguarde.";
+            status.innerText = "Tentando modelo principal (Flash)...";
             
             try {
-                // ALTERAÇÃO PARA v1 (ESTÁVEL) E MODELO EXPLÍCITO
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: "Gere apenas o código HTML com CSS inline para este pedido: " + prompt + ". Não use markdown, não explique nada, retorne apenas o código pronto para uso." }] }]
-                    })
-                });
+                let response = await callGemini("gemini-1.5-flash", prompt);
+                let data = await response.json();
 
-                const data = await response.json();
+                if (data.error) {
+                    status.innerText = "Modelo Flash indisponível. Tentando Plano B (Gemini Pro)...";
+                    response = await callGemini("gemini-pro", prompt);
+                    data = await response.json();
+                }
 
                 if (data.error) {
                     status.innerHTML = `<span style="color:#ff4757">Erro Google: ${data.error.message}</span>`;
@@ -119,14 +118,11 @@
                 }
 
                 let html = data.candidates[0].content.parts[0].text;
-                // Limpeza profissional de caracteres especiais
                 html = html.replace(/```html/g, "").replace(/```/g, "").trim();
-                
                 editor.addComponents(html);
-                status.innerText = "✅ Seção inserida!";
-                
+                status.innerText = "✅ Sucesso!";
             } catch (e) {
-                status.innerText = "Erro de rede. Tente novamente.";
+                status.innerText = "Erro de conexão.";
             }
         }
 
@@ -135,15 +131,16 @@
                 container: '#gjs', height: '100vh', width: 'auto', storageManager: false,
                 traitManager: { appendTo: '#traits-container' },
                 blockManager: { appendTo: '#blocks', blocks: [
-                    { id: 'sec', label: 'Bloco Vazio', content: '<section style="padding:40px;">Arraste algo aqui</section>' },
-                    { id: 'txt', label: 'Texto', content: '<p>Novo Texto</p>' }
+                    { id: 'sec', label: 'Seção', content: '<section style="padding:40px;">Arraste aqui</section>' }
                 ]}
             });
             editor.on('component:selected', () => switchTab('traits'));
         }
 
+        function clearEditor() { if(confirm("Deseja apagar tudo?")) editor.DomComponents.clear(); }
+
         async function saveToSupabase() {
-            const name = prompt("Nome Interno:");
+            const name = prompt("Nome da página:");
             if (name) await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
             alert("Salvo!");
         }
