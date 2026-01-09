@@ -2,48 +2,31 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Web Builder Pro v1.9.4 - AI Magic Edition</title>
-    <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
-    <script src="https://unpkg.com/grapesjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <title>Web Builder Pro v1.9.5 - AI Stable</title>
+    <link rel="stylesheet" href="[https://unpkg.com/grapesjs/dist/css/grapes.min.css](https://unpkg.com/grapesjs/dist/css/grapes.min.css)">
+    <script src="[https://unpkg.com/grapesjs](https://unpkg.com/grapesjs)"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
     <style>
-        :root { --primary: #3ecf8e; --ai-color: #a29bfe; --bg: #121212; --panel: #1e1e1e; }
+        :root { --primary: #3ecf8e; --ai: #a29bfe; --bg: #121212; }
         body, html { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: #fff; overflow: hidden; }
-        
-        /* Proteção de Acesso */
         #lock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #lock-screen input { padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2d2d2d; color: white; width: 260px; text-align: center; font-size: 16px; outline: none; transition: 0.3s; }
-        #lock-screen input:focus { border-color: var(--primary); }
-
-        /* Estrutura do Editor */
         .editor-row { display: flex; height: 100vh; width: 100%; }
         #gjs { flex-grow: 1; border: none; }
-        
-        /* Painel Lateral */
-        .panel__right { width: 320px; background: var(--panel); border-left: 1px solid #333; display: flex; flex-direction: column; color: #ddd; }
+        .panel__right { width: 320px; background: #1e1e1e; border-left: 1px solid #333; display: flex; flex-direction: column; color: #ccc; }
         .action-buttons { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-bottom: 1px solid #333; }
-        .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; text-transform: uppercase; transition: 0.2s; }
+        .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; text-transform: uppercase; }
         .btn-pub { background: var(--primary); color: #000; grid-column: span 2; }
         .btn-save { background: #333; color: white; }
-        .btn:hover { opacity: 0.8; }
-
-        /* Abas */
         .tabs { display: flex; background: #151515; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 10px; font-weight: bold; border-bottom: 2px solid transparent; }
         .tab.active { border-bottom: 2px solid var(--primary); color: var(--primary); }
-        .tab-ai.active { border-bottom-color: var(--ai-color); color: var(--ai-color); }
-        
+        .tab-ai.active { border-bottom-color: var(--ai); color: var(--ai); }
         #blocks, #traits, #ai-panel { flex: 1; overflow-y: auto; padding: 15px; background: #1a1a1a; }
         .hidden { display: none; }
-
-        /* Estilo IA */
-        #ai-prompt { width: 100%; height: 120px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 6px; padding: 10px; box-sizing: border-box; resize: none; margin-bottom: 10px; font-family: inherit; }
-        .btn-ai { background: var(--ai-color); color: #000; width: 100%; }
-        #ai-status { font-size: 11px; color: var(--ai-color); margin-top: 10px; text-align: center; display: none; }
-        
-        /* Custom GrapesJS Blocks */
-        .gjs-block { background: #2d2d2d !important; color: #fff !important; border: 1px solid #444 !important; border-radius: 4px !important; }
+        #ai-prompt { width: 100%; height: 100px; background: #2d2d2d; color: white; border: 1px solid #444; border-radius: 6px; padding: 10px; box-sizing: border-box; resize: none; margin-bottom: 10px; outline: none; font-family: inherit; }
+        .btn-ai { background: var(--ai); color: #000; width: 100%; }
+        #ai-status { font-size: 11px; color: var(--ai); margin-top: 10px; text-align: center; }
+        .gjs-block { background: #2d2d2d !important; color: #fff !important; border: 1px solid #444 !important; }
         .gjs-cv-canvas { width: calc(100% - 320px) !important; }
     </style>
 </head>
@@ -51,86 +34,60 @@
 
     <div id="app-container">
         <div id="lock-screen" style="display:none;">
-            <h3 style="color: var(--primary)">BUILDER AI MAGIC</h3>
-            <input type="password" id="pass-input" placeholder="Sua senha de acesso" onkeydown="checkPass(event)">
+            <h2 style="color: var(--primary)">DASHBOARD v1.9.5</h2>
+            <input type="password" id="pass-input" placeholder="Sua senha" style="padding:12px; border-radius:6px; text-align:center;" onkeydown="checkPass(event)">
         </div>
 
         <div class="editor-row">
             <div id="gjs" style="display:none;"></div>
-            
             <div id="sidebar" class="panel__right" style="display:none;">
                 <div class="action-buttons">
-                    <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR PÁGINA</button>
-                    <button class="btn btn-save" onclick="saveToSupabase()">SALVAR NUVEM</button>
-                    <button class="btn btn-save" onclick="loadFromSupabase()">ABRIR ÚLTIMA</button>
+                    <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR NA WEB</button>
+                    <button class="btn btn-save" onclick="saveToSupabase()">SALVAR</button>
+                    <button class="btn btn-save" onclick="loadFromSupabase()">ABRIR</button>
                 </div>
-                
                 <div class="tabs">
-                    <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">BLOCOS</div>
+                    <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">ELEMENTOS</div>
                     <div class="tab" id="tab-traits" onclick="switchTab('traits')">AJUSTES</div>
                     <div class="tab tab-ai" id="tab-ai" onclick="switchTab('ai')">IA MAGIC</div>
                 </div>
-
                 <div id="blocks"></div>
                 <div id="traits" class="hidden"><div id="traits-container"></div></div>
-                
                 <div id="ai-panel" class="hidden">
-                    <h4 style="margin: 0 0 10px 0; color: var(--ai-color);">Gerador Inteligente</h4>
-                    <p style="font-size: 11px; color: #888; margin-bottom: 10px;">Descreva uma seção e a IA irá construí-la com HTML e CSS inline.</p>
-                    <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de captura com título, um campo de e-mail e um botão moderno..."></textarea>
-                    <button class="btn btn-ai" onclick="generateAIBlock()">✨ GERAR SEÇÃO AGORA</button>
-                    <div id="ai-status">Processando design...</div>
+                    <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de depoimentos com 3 colunas e estrelas amarelas..."></textarea>
+                    <button class="btn btn-ai" onclick="generateAIBlock()">✨ GERAR COM IA</button>
+                    <div id="ai-status"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÕES GLOBAIS
         const MINHA_SENHA = "Ph17112017"; 
         const GEMINI_API_KEY = "AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w"; 
-        const SUPABASE_URL = 'https://jlegilyjmombwaixbdml.supabase.co'; 
+        const SUPABASE_URL = '[https://jlegilyjmombwaixbdml.supabase.co](https://jlegilyjmombwaixbdml.supabase.co)'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsZWdpbHlqbW9tYndhaXhiZG1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NjI5MzYsImV4cCI6MjA4MzUzODkzNn0.8Bivhr8C1kkEAkh1szvDy5Z7HesSUQKwYsFXDeoVV18';
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Roteamento de Visualização vs Editor
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const pageName = urlParams.get('p');
-
             if (pageName) {
                 const { data } = await _supabase.from('pages').select('html, css').eq('name', pageName).single();
                 if (data) {
                     document.body.innerHTML = data.html + `<style>${data.css}</style>`;
-                    // Ativar scripts das páginas (como delays e cronômetros)
-                    document.querySelectorAll('script').forEach(oldScript => {
-                        const newScript = document.createElement('script');
-                        newScript.text = oldScript.text;
-                        document.body.appendChild(newScript);
-                    });
-                    document.body.style.overflow = 'auto';
-                } else {
-                    document.body.innerHTML = "<h1 style='text-align:center; padding:50px;'>Página não encontrada.</h1>";
+                    document.querySelectorAll('script').forEach(s => { const n = document.createElement('script'); n.text = s.text; document.body.appendChild(n); });
                 }
-            } else {
-                document.getElementById('lock-screen').style.display = 'flex';
-            }
+            } else { document.getElementById('lock-screen').style.display = 'flex'; }
         };
 
-        function checkPass(e) { 
-            if (e.key === "Enter" && document.getElementById('pass-input').value === MINHA_SENHA) { 
-                document.getElementById('lock-screen').style.display = 'none'; 
-                document.getElementById('gjs').style.display = 'block'; 
-                document.getElementById('sidebar').style.display = 'block'; 
-                initEditor(); 
-            } 
-        }
+        function checkPass(e) { if (e.key === "Enter" && document.getElementById('pass-input').value === MINHA_SENHA) { document.getElementById('lock-screen').style.display = 'none'; document.getElementById('gjs').style.display = 'block'; document.getElementById('sidebar').style.display = 'block'; initEditor(); } }
 
         function switchTab(tab) {
             ['blocks', 'traits', 'ai'].forEach(t => {
-                const panel = document.getElementById(t + (t === 'ai' ? '-panel' : ''));
-                if(panel) panel.classList.toggle('hidden', t !== tab);
+                const p = document.getElementById(t + (t === 'ai' ? '-panel' : ''));
+                if(p) p.classList.toggle('hidden', t !== tab);
                 document.getElementById('tab-' + t).classList.toggle('active', t === tab);
             });
         }
@@ -138,21 +95,16 @@
         async function generateAIBlock() {
             const prompt = document.getElementById('ai-prompt').value;
             const status = document.getElementById('ai-status');
-            if (!prompt) return alert("Escreva o que você deseja criar!");
-
-            status.style.display = "block";
-            status.innerText = "IA está desenhando sua seção...";
-
+            if (!prompt) return;
+            
+            status.innerText = "IA está processando...";
+            
             try {
-                // CORREÇÃO: Usando endpoint v1 estável
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                // VOLTAMOS PARA v1beta QUE É MAIS PERMISSIVA COM O MODELO FLASH
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ 
-                            parts: [{ text: "Você é um mestre em web design. Retorne APENAS o código HTML puro com CSS inline (dentro das tags) para: " + prompt + ". Não use markdown, não explique nada, retorne apenas as tags HTML." }] 
-                        }] 
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Retorne APENAS o código HTML puro com CSS inline para este pedido: " + prompt + ". Não use markdown, não explique nada." }] }] })
                 });
 
                 const data = await response.json();
@@ -162,15 +114,15 @@
                     return;
                 }
 
-                let htmlCode = data.candidates[0].content.parts[0].text;
-                // Limpeza de markdown caso a IA envie
-                htmlCode = htmlCode.replace(/```html/g, "").replace(/```/g, "").trim();
+                let html = data.candidates[0].content.parts[0].text;
                 
-                editor.addComponents(htmlCode);
-                status.innerText = "Sucesso! Seção inserida.";
-                setTimeout(() => status.style.display = "none", 3000);
-            } catch (error) {
-                status.innerText = "Erro na conexão. Verifique sua chave API.";
+                // LIMPADEIRA DE CÓDIGO (Remove aspas e tags de markdown)
+                html = html.replace(/```html/g, "").replace(/```/g, "").replace(/'''/g, "").trim();
+                
+                editor.addComponents(html);
+                status.innerText = "Pronto! Seção inserida.";
+            } catch (e) {
+                status.innerText = "Erro crítico. Verifique o console.";
             }
         }
 
@@ -179,37 +131,30 @@
                 container: '#gjs', height: '100vh', width: 'auto', storageManager: false,
                 traitManager: { appendTo: '#traits-container' },
                 blockManager: { appendTo: '#blocks', blocks: [
-                    { id: 'sec', label: '<b>Seção Vazia</b>', content: '<section style="padding:50px; text-align:center;">Nova Seção</section>', category: 'Estrutura' },
-                    { id: 'txt', label: '<b>Texto</b>', content: '<div style="padding:10px;">Insira seu texto aqui</div>', category: 'Básico' },
-                    { id: 'btn', label: '<b>Botão</b>', content: '<div style="text-align:center;padding:15px;"><button style="background:var(--primary); color:black; padding:12px 25px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">BOTÃO</button></div>', category: 'Básico' }
+                    { id: 'b1', label: 'Seção', content: '<section style="padding:50px; text-align:center;">Nova Seção</section>' },
+                    { id: 'b2', label: 'Texto', content: '<div style="padding:10px;">Texto de exemplo</div>' }
                 ]}
             });
-            // Abrir aba de configurações automaticamente ao selecionar algo
             editor.on('component:selected', () => switchTab('traits'));
         }
 
         async function saveToSupabase() {
-            const name = prompt("Nome Interno da Página:", "Projeto_Novo");
-            if (!name) return;
-            const { error } = await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
-            if (error) alert("Erro ao salvar: " + error.message); else alert("Salvo na nuvem!");
+            const name = prompt("Nome da página:");
+            if (name) await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
+            alert("Salvo!");
         }
 
         async function publishPage() {
-            const name = prompt("Defina o nome da URL (ex: oferta-vip):");
-            if (!name) return;
-            await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
-            const finalUrl = window.location.href.split('?')[0] + "?p=" + name;
-            prompt("🚀 PÁGINA PUBLICADA! Copie o link abaixo:", finalUrl);
+            const name = prompt("Nome da URL:");
+            if (name) {
+                await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
+                alert("No ar! " + window.location.href.split('?')[0] + "?p=" + name);
+            }
         }
 
         async function loadFromSupabase() {
             const { data } = await _supabase.from('pages').select('*').order('id', { ascending: false }).limit(1);
-            if (data && data[0]) {
-                editor.setComponents(data[0].html);
-                editor.setStyle(data[0].css);
-                alert("Última versão carregada!");
-            }
+            if (data[0]) { editor.setComponents(data[0].html); editor.setStyle(data[0].css); }
         }
     </script>
 </body>
