@@ -2,78 +2,91 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Builder AI - Private Edition v3.0</title>
+    <title>Atomic Builder v3.3 - Meus Projetos</title>
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/grapesjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #3ecf8e; --accent: #8e44ad; --bg: #0f172a; }
-        body, html { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: #fff; }
-        
-        /* Proteção de Acesso ao Editor */
-        #lock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        #lock-screen input { padding: 15px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 280px; text-align: center; font-size: 18px; outline: none; margin-top: 20px; }
+        :root { --bg-dark: #0f172a; --panel-dark: #1e293b; --accent: #10b981; --text-main: #f1f5f9; --border: #334155; }
+        body, html { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: #000; overflow: hidden; color: var(--text-main); }
 
-        /* Interface do Builder */
-        #main-builder { display: none; width: 100%; height: 100vh; flex-direction: row; }
+        #lock-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #lock-screen input { padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel-dark); color: white; width: 300px; text-align: center; }
+
+        #app-wrapper { display: none; flex-direction: column; height: 100vh; }
+        header { height: 60px; background: var(--bg-dark); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .top-actions { display: flex; gap: 10px; }
+
+        .editor-content { display: flex; flex-grow: 1; overflow: hidden; }
         #gjs { flex-grow: 1; }
-        
-        .sidebar { width: 320px; background: #1e293b; border-left: 1px solid #334155; display: flex; flex-direction: column; color: #f1f5f9; }
-        .top-nav { padding: 15px; background: #0f172a; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        
-        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 11px; text-transform: uppercase; transition: 0.3s; }
-        .btn-main { background: var(--primary); color: #0f172a; grid-column: span 2; }
-        .btn-alt { background: #334155; color: white; }
-        
-        .tabs { display: flex; background: #0f172a; margin-top: 5px; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-size: 11px; font-weight: bold; opacity: 0.6; border-bottom: 2px solid transparent; }
-        .tab.active { opacity: 1; border-bottom-color: var(--primary); color: var(--primary); }
 
-        #blocks-container, #style-container, #clone-container { flex: 1; overflow-y: auto; padding: 15px; }
-        .hidden { display: none; }
+        .sidebar { width: 320px; background: var(--panel-dark); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+        .tabs { display: flex; background: #111827; }
+        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-size: 10px; font-weight: 700; opacity: 0.5; }
+        .tab.active { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        /* Estilização dos Blocos Estilo Atomicat */
-        .gjs-block { width: 100% !important; min-height: auto !important; background: #334155 !important; color: white !important; border: 1px solid #475569 !important; border-radius: 6px !important; margin-bottom: 8px !important; padding: 15px !important; }
-        .gjs-block:hover { border-color: var(--primary) !important; }
+        .panel-body { flex: 1; overflow-y: auto; padding: 15px; }
+        .hidden { display: none !important; }
+
+        .btn { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: #064e3b; }
+        .btn-secondary { background: var(--border); color: white; }
+
+        /* Lista de Projetos */
+        .project-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .project-item:hover { border-color: var(--accent); }
+        .project-name { font-size: 12px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <h2 style="color: var(--primary); letter-spacing: 2px;">BUILDER PRIVATE v3.0</h2>
-        <input type="password" id="pass-input" placeholder="Senha de Acesso" onkeydown="handleLogin(event)">
+        <h2 style="color: var(--accent);"><i class="fas fa-bolt"></i> DASHBOARD</h2>
+        <input type="password" id="pass-input" placeholder="Sua senha mestra" onkeydown="handleLogin(event)">
     </div>
 
-    <div id="main-builder">
-        <div id="gjs"></div>
-        
-        <div class="sidebar">
-            <div class="top-nav">
-                <button class="btn btn-main" onclick="publishNow()">🚀 PUBLICAR PÁGINA VIVA</button>
-                <button class="btn btn-alt" onclick="saveProject()">SALVAR</button>
-                <button class="btn btn-alt" onclick="loadLast()">ABRIR</button>
+    <div id="app-wrapper">
+        <header>
+            <div style="font-weight: 900; color: var(--accent);"><i class="fas fa-bolt"></i> ATOMIC v3.3</div>
+            <div class="top-actions">
+                <button class="btn btn-secondary" onclick="saveProject()"><i class="fas fa-save"></i> SALVAR</button>
+                <button class="btn btn-primary" onclick="publishNow()"><i class="fas fa-rocket"></i> PUBLICAR</button>
             </div>
+        </header>
 
-            <div class="tabs">
-                <div class="tab active" id="tab-blocks" onclick="showTab('blocks')">BLOCOS</div>
-                <div class="tab" id="tab-style" onclick="showTab('style')">DESIGN</div>
-                <div class="tab" id="tab-clone" onclick="showTab('clone')">CLONAR</div>
-            </div>
+        <div class="editor-content">
+            <div id="gjs"></div>
+            <aside class="sidebar">
+                <div class="tabs">
+                    <div class="tab active" id="tab-blocks" onclick="showTab('blocks')">BLOCOS</div>
+                    <div class="tab" id="tab-projects" onclick="showTab('projects')">PROJETOS</div>
+                    <div class="tab" id="tab-style" onclick="showTab('style')">DESIGN</div>
+                    <div class="tab" id="tab-ai" onclick="showTab('ai')">CLONAR</div>
+                </div>
 
-            <div id="blocks-container">
-                <div id="gjs-blocks"></div>
-            </div>
+                <div id="blocks-container" class="panel-body">
+                    <div id="gjs-blocks"></div>
+                </div>
 
-            <div id="style-container" class="hidden">
-                <div id="gjs-traits"></div>
-            </div>
+                <div id="projects-container" class="panel-body hidden">
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;" onclick="loadProjectList()">
+                        <i class="fas fa-sync"></i> ATUALIZAR LISTA
+                    </button>
+                    <div id="project-list">
+                        <p style="text-align:center; font-size:12px; color:#666;">Carregando projetos...</p>
+                    </div>
+                </div>
 
-            <div id="clone-container" class="hidden">
-                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Cole o código HTML de qualquer página para clonar o design:</p>
-                <textarea id="import-code" style="width:100%; height:150px; background:#0f172a; color:#3ecf8e; border:1px solid #334155; padding:10px; font-size:10px;" placeholder="<html>..."></textarea>
-                <button class="btn btn-main" style="margin-top:10px;" onclick="importHTML()">IMPORTAR AGORA</button>
-            </div>
+                <div id="style-container" class="panel-body hidden">
+                    <div id="gjs-styles"></div>
+                </div>
+
+                <div id="ai-container" class="panel-body hidden">
+                    <textarea id="import-code" style="width:100%; height:150px; background:#0f172a; color:var(--accent); border:1px solid var(--border); border-radius:8px; padding:10px; font-size:11px;" placeholder="Cole o código HTML aqui..."></textarea>
+                    <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="importHTML()">IMPORTAR AGORA</button>
+                </div>
+            </aside>
         </div>
     </div>
 
@@ -83,34 +96,25 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsZWdpbHlqbW9tYndhaXhiZG1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NjI5MzYsImV4cCI6MjA4MzUzODkzNn0.8Bivhr8C1kkEAkh1szvDy5Z7HesSUQKwYsFXDeoVV18';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Lógica de Visualização vs Edição
         window.onload = async () => {
-            const params = new URLSearchParams(window.location.search);
-            const p = params.get('p');
-
+            const p = new URLSearchParams(window.location.search).get('p');
             if (p) {
-                // MODO PÚBLICO (GHOST): Carrega a página limpa
                 const { data } = await _supabase.from('pages').select('html, css').eq('name', p).single();
-                if (data) {
-                    document.body.innerHTML = data.html + `<style>${data.css}</style>`;
-                    document.body.style.overflow = 'auto';
-                }
-            } else {
-                // MODO EDITOR: Pede senha
-                document.getElementById('lock-screen').style.display = 'flex';
-            }
+                if (data) { document.body.innerHTML = data.html + `<style>${data.css}</style>`; document.body.style.overflow = 'auto'; }
+            } else { document.getElementById('lock-screen').style.display = 'flex'; }
         };
 
         function handleLogin(e) {
             if (e.key === "Enter" && document.getElementById('pass-input').value === SENHA_MESTRA) {
                 document.getElementById('lock-screen').style.display = 'none';
-                document.getElementById('main-builder').style.display = 'flex';
+                document.getElementById('app-wrapper').style.display = 'flex';
                 startEditor();
+                loadProjectList();
             }
         }
 
         function showTab(name) {
-            ['blocks', 'style', 'clone'].forEach(t => {
+            ['blocks', 'projects', 'style', 'ai'].forEach(t => {
                 document.getElementById(t + '-container').classList.toggle('hidden', t !== name);
                 document.getElementById('tab-' + t).classList.toggle('active', t === name);
             });
@@ -118,41 +122,64 @@
 
         function startEditor() {
             window.editor = grapesjs.init({
-                container: '#gjs', height: '100vh', width: 'auto', storageManager: false,
-                traitManager: { appendTo: '#gjs-traits' },
-                blockManager: { appendTo: '#gjs-blocks', blocks: [
-                    { id: 'h1', label: '<i class="fa fa-heading"></i> Headline', content: '<h1 style="text-align:center; padding:20px; color:#1e293b;">Sua Headline Matadora</h1>' },
-                    { id: 'wpp', label: '<i class="fab fa-whatsapp"></i> Zap Flutuante', content: '<a href="https://wa.me/55..." style="position:fixed; bottom:20px; right:20px; background:#25d366; color:white; padding:15px; border-radius:50%; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index:999;"><i class="fab fa-whatsapp fa-2x"></i></a>' },
-                    { id: 'vsl', label: '<i class="fa fa-play"></i> Vídeo VSL', content: '<div style="background:#000; padding:56.25% 0 0 0; position:relative; margin:20px;"><div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white;">SEU VÍDEO AQUI</div></div>' },
-                    { id: 'timer', label: '<i class="fa fa-clock"></i> Cronômetro', content: '<div style="background:#f1f5f9; padding:20px; text-align:center; border:2px solid #ef4444;"><p style="color:#ef4444; font-weight:bold;">A OFERTA EXPIRE EM:</p><div style="font-size:32px; font-weight:900;">14:59</div></div>' }
-                ]}
+                container: '#gjs', height: '100%', storageManager: false,
+                styleManager: { appendTo: '#gjs-styles' },
+                blockManager: { appendTo: '#gjs-blocks' }
             });
             editor.on('component:selected', () => showTab('style'));
         }
 
-        function importHTML() {
-            const code = document.getElementById('import-code').value;
-            if (code) { editor.setComponents(code); alert("Design Importado!"); }
+        // FUNÇÃO PARA LISTAR PROJETOS DO SUPABASE
+        async function loadProjectList() {
+            const listArea = document.getElementById('project-list');
+            listArea.innerHTML = "Carregando...";
+            const { data, error } = await _supabase.from('pages').select('name, id').order('id', { ascending: false });
+            
+            if (data) {
+                listArea.innerHTML = "";
+                data.forEach(proj => {
+                    const item = document.createElement('div');
+                    item.className = 'project-item';
+                    item.innerHTML = `
+                        <span class="project-name">${proj.name}</span>
+                        <button class="btn btn-secondary" style="padding:5px 10px" onclick="openProject('${proj.name}')">ABRIR</button>
+                    `;
+                    listArea.appendChild(item);
+                });
+            }
         }
 
-        async function publishNow() {
-            const name = prompt("Defina o link (ex: vsl-leilao):");
-            if (!name) return;
-            await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() });
-            const finalLink = window.location.origin + window.location.pathname + "?p=" + name;
-            alert("Sua página está AO VIVO e Pública!\n\nLink: " + finalLink);
-            window.open(finalLink, '_blank');
+        async function openProject(name) {
+            const { data } = await _supabase.from('pages').select('html, css').eq('name', name).single();
+            if (data) {
+                editor.setComponents(data.html);
+                editor.setStyle(data.css);
+                showTab('blocks');
+                alert("Projeto '" + name + "' carregado!");
+            }
+        }
+
+        function importHTML() {
+            const code = document.getElementById('import-code').value;
+            if (code) { editor.setComponents(code); alert("HTML Importado!"); }
         }
 
         async function saveProject() {
-            const name = prompt("Nome do projeto:");
-            if (name) await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() });
-            alert("Salvo!");
+            const name = prompt("Nome para salvar este projeto:");
+            if (name) {
+                await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
+                alert("Salvo!");
+                loadProjectList();
+            }
         }
 
-        async function loadLast() {
-            const { data } = await _supabase.from('pages').select('*').order('id', { ascending: false }).limit(1);
-            if (data[0]) { editor.setComponents(data[0].html); editor.setStyle(data[0].css); }
+        async function publishNow() {
+            const name = prompt("Defina o link da URL:");
+            if (name) {
+                await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
+                const url = window.location.origin + window.location.pathname + "?p=" + name;
+                window.open(url, '_blank');
+            }
         }
     </script>
 </body>
