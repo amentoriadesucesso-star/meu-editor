@@ -1,11 +1,8 @@
-AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w
-
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Web Builder Pro v1.9 - AI Magic Edition</title>
+    <title>Web Builder Pro v1.9.2 - AI Magic Edition</title>
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <script src="https://unpkg.com/grapesjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -30,6 +27,7 @@ AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w
         .btn-ai { background: var(--ai-color); color: white; width: 100%; margin-bottom: 10px; }
         #ai-status { font-size: 11px; color: #a29bfe; text-align: center; margin-bottom: 10px; display: none; }
         .ai-instruction { font-size: 11px; color: #888; margin-bottom: 10px; line-height: 1.4; }
+        .gjs-cv-canvas { width: calc(100% - 320px) !important; }
     </style>
 </head>
 <body>
@@ -42,47 +40,57 @@ AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w
 
         <div class="editor-row">
             <div id="gjs" style="display:none;"></div>
-            
             <div id="sidebar" class="panel__right" style="display:none;">
                 <div class="action-buttons">
                     <button class="btn btn-pub" onclick="publishPage()">🚀 PUBLICAR PÁGINA</button>
                     <button class="btn" style="background:#444; color:white;" onclick="saveToSupabase()">💾 SALVAR NUVEM</button>
                 </div>
-                
                 <div class="tabs">
                     <div class="tab active" id="tab-blocks" onclick="switchTab('blocks')">BLOCOS</div>
                     <div class="tab" id="tab-traits" onclick="switchTab('traits')">CONFIGS</div>
                     <div class="tab tab-ai" id="tab-ai" onclick="switchTab('ai')">IA MAGIC</div>
                 </div>
-
                 <div id="blocks"></div>
                 <div id="traits" class="hidden"><div id="traits-container"></div></div>
-                
                 <div id="ai-panel" class="hidden">
                     <h4 style="margin: 0 0 5px 0; color: #a29bfe;">IA Geradora de Seções</h4>
-                    <p class="ai-instruction">Descreva a seção que você quer (ex: "Uma seção de depoimentos moderna" ou "Um rodapé com links e logo").</p>
-                    <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de preços com 3 planos, estilo dark mode, com botões verdes..."></textarea>
+                    <p class="ai-instruction">Descreva a seção (ex: "Depoimentos com 3 colunas").</p>
+                    <textarea id="ai-prompt" placeholder="Ex: Crie uma seção de preços..."></textarea>
                     <button class="btn btn-ai" onclick="generateAIBlock()">✨ GERAR SEÇÃO COMPLETA</button>
                     <div id="ai-status">Processando design...</div>
-                    <hr style="border:0; border-top:1px solid #333; margin: 15px 0;">
-                    <p class="ai-instruction">Dica: A IA gera o HTML e o CSS e insere direto no seu cursor.</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // CONFIGURAÇÕES
         const MINHA_SENHA = "Ph17112017"; 
         const GEMINI_API_KEY = "AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w"; 
         const SUPABASE_URL = 'https://jlegilyjmombwaixbdml.supabase.co'; 
-        const SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsZWdpbHlqbW9tYndhaXhiZG1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NjI5MzYsImV4cCI6MjA4MzUzODkzNn0.8Bivhr8C1kkEAkh1szvDy5Z7HesSUQKwYsFXDeoVV18'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsZWdpbHlqbW9tYndhaXhiZG1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NjI5MzYsImV4cCI6MjA4MzUzODkzNn0.8Bivhr8C1kkEAkh1szvDy5Z7HesSUQKwYsFXDeoVV18';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsZWdpbHlqbW9tYndhaXhiZG1sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NjI5MzYsImV4cCI6MjA4MzUzODkzNn0.8Bivhr8C1kkEAkh1szvDy5Z7HesSUQKwYsFXDeoVV18';
+        
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageName = urlParams.get('p');
+            if (pageName) {
+                const { data } = await _supabase.from('pages').select('html, css').eq('name', pageName).single();
+                if (data) {
+                    document.body.innerHTML = data.html + `<style>${data.css}</style>`;
+                    document.querySelectorAll('script').forEach(s => { const n = document.createElement('script'); n.text = s.text; document.body.appendChild(n); });
+                    document.body.style.overflow = 'auto';
+                }
+            } else { document.getElementById('lock-screen').style.display = 'flex'; }
+        };
 
         function checkPass(e) { if (e.key === "Enter" && document.getElementById('pass-input').value === MINHA_SENHA) { document.getElementById('lock-screen').style.display = 'none'; document.getElementById('gjs').style.display = 'block'; document.getElementById('sidebar').style.display = 'block'; initEditor(); } }
 
         function switchTab(tab) {
             ['blocks', 'traits', 'ai'].forEach(t => {
-                document.getElementById(t + (t === 'ai' ? '-panel' : '')).classList.toggle('hidden', t !== tab);
+                const p = document.getElementById(t + (t === 'ai' ? '-panel' : ''));
+                if(p) p.classList.toggle('hidden', t !== tab);
                 document.getElementById('tab-' + t).classList.toggle('active', t === tab);
             });
         }
@@ -90,32 +98,21 @@ AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w
         async function generateAIBlock() {
             const prompt = document.getElementById('ai-prompt').value;
             const status = document.getElementById('ai-status');
-            if (!prompt) return alert("Descreva a seção primeiro!");
-
+            if (!prompt) return;
             status.style.display = "block";
-            status.innerText = "IA está desenhando sua seção...";
-
-            const systemPrompt = "Você é um mestre em web design. O usuário vai pedir uma seção de site. Retorne APENAS o código HTML puro, usando estilos inline (CSS inline) em todas as tags. Não use classes externas. Não escreva explicações, apenas o código. O design deve ser moderno e responsivo.";
-
+            status.innerText = "IA desenhando...";
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nPedido do usuário: " + prompt }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Retorne APENAS o código HTML puro com CSS inline. Sem explicações. Pedido: " + prompt }] }] })
                 });
-
-                const data = await response.json();
-                let htmlCode = data.candidates[0].content.parts[0].text;
-                
-                // Limpa possíveis marcações de Markdown que a IA possa enviar
-                htmlCode = htmlCode.replace(/```html/g, "").replace(/```/g, "").trim();
-                
-                editor.addComponents(htmlCode);
-                status.innerText = "Sucesso! Seção inserida.";
-                setTimeout(() => status.style.display = "none", 3000);
-            } catch (error) {
-                status.innerText = "Erro ao gerar. Verifique sua chave API.";
-            }
+                const d = await resp.json();
+                let html = d.candidates[0].content.parts[0].text.replace(/```html/g, "").replace(/```/g, "").trim();
+                editor.addComponents(html);
+                status.innerText = "Pronto!";
+                setTimeout(() => status.style.display="none", 2000);
+            } catch (e) { status.innerText = "Erro na API."; }
         }
 
         function initEditor() {
@@ -123,9 +120,9 @@ AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w
                 container: '#gjs', height: '100vh', width: 'auto', storageManager: false,
                 traitManager: { appendTo: '#traits-container' },
                 blockManager: { appendTo: '#blocks', blocks: [
-                    { id: 'sec', label: 'Seção Vazia', content: '<section style="padding:50px;">Nova Seção</section>' },
+                    { id: 'sec', label: 'Seção', content: '<section style="padding:50px;">Nova Seção</section>' },
                     { id: 'txt', label: 'Texto', content: '<div>Texto</div>' },
-                    { id: 'btn', label: 'Botão', content: '<button style="padding:10px 20px; background:green; color:white; border-radius:5px; border:none;">Botão</button>' }
+                    { id: 'btn', label: 'Botão', content: '<div style="text-align:center;padding:10px;"><button style="padding:10px 20px; background:#3ecf8e; color:black; border-radius:5px; border:none; font-weight:bold;">Botão</button></div>' }
                 ]}
             });
             editor.on('component:selected', () => switchTab('traits'));
@@ -138,10 +135,10 @@ AIzaSyDC9l8aWW5w_govNf44pv6ZitnxxGyoe1w
         }
 
         async function publishPage() {
-            const name = prompt("URL amigável:");
+            const name = prompt("Nome da URL:");
             if (name) {
                 await _supabase.from('pages').upsert({ name, html: editor.getHtml(), css: editor.getCss() }, { onConflict: 'name' });
-                alert("Página publicada! Link: " + window.location.href.split('?')[0] + "?p=" + name);
+                alert("No ar! " + window.location.href.split('?')[0] + "?p=" + name);
             }
         }
     </script>
